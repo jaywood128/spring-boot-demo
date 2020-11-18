@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.johnathon.podcast_blast;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,7 +14,7 @@ public class SpringBootDemoApplication {
 		SpringApplication.run(SpringBootDemoApplication.class, args);
 	}
 	@GetMapping("/hello")
-	public String sayHello(@RequestParam(value = "myName", defaultValue = "World") String name) {
-		return String.format("Hello Johnathon Test %s!", name);
+	public String sayHello(@RequestParam(value = "Johnathon", defaultValue = "World") String name) {
+		return String.format("Hello %s!", name);
 	}
 }
