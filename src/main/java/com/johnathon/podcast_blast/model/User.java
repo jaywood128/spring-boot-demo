@@ -2,7 +2,6 @@ package com.johnathon.podcast_blast.model;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
-
 import lombok.*;
 
 import java.util.ArrayList;
@@ -11,14 +10,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Data
 @Table(name = "user")
 
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @NotEmpty(message = "Name is required")
     private String name;
@@ -29,7 +27,7 @@ public class User {
     @NotEmpty(message = "password is required")
     private String passwordDigest;
 
-    @ManyToMany
+    @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(
             name = "user_podcast",
             joinColumns = {@JoinColumn(name = "user_id")},
@@ -37,7 +35,7 @@ public class User {
     )
     private Collection<Podcast> podcasts = new ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(
             name = "user_episode",
             joinColumns = {@JoinColumn(name = "user_id")},
@@ -45,16 +43,14 @@ public class User {
     )
     private Collection<Episode> episodes = new ArrayList<>();
 
-    public User(int id, String name, String email, String passwordDigest) {
+    public User(Long id, String name, String email, String passwordDigest) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.passwordDigest = passwordDigest;
-        this.podcasts = new ArrayList<>();
-        this.episodes = new ArrayList<>();
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
@@ -78,7 +74,7 @@ public class User {
         return podcasts;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -95,7 +91,7 @@ public class User {
     }
 
     public void setEpisodes(Episode episode) {
-        if ((episode != null) && (!this.podcasts.contains(episode))) {
+        if ((episode != null) && (!this.episodes.contains(episode))) {
             this.episodes.add(episode);
         }
     }

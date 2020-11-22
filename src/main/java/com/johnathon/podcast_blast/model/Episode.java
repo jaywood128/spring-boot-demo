@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 @Entity
-@Data
 @Table(name = "episode")
 
 
@@ -17,19 +16,49 @@ public class Episode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "podcast_id")
+    // @JoinColumn annotation defines the actual physical mapping on the owning side //
+    @JoinColumn(name="podcast_id")
     private Podcast podcast;
 
-    @ManyToMany(mappedBy = "user")
+    @ManyToMany(mappedBy = "episodes")
     private Collection<User> user = new ArrayList();
 
-    public Episode(int id, Podcast podcast, Collection<User> user) {
+    public Episode(Long id, Podcast podcast) {
         this.id = id;
         this.podcast = podcast;
-        this.user = new ArrayList<User>();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        if(id != null){
+            this.id = id;
+        }
+    }
+
+    public Podcast getPodcast() {
+        return podcast;
+    }
+
+    public void setPodcast(Podcast podcast) {
+        if(podcast != null && this.podcast == null){
+            this.podcast = podcast;
+        }
+    }
+
+    public Collection<User> getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        if(!this.user.contains((user)) && user != null){
+            this.user.add(user);
+        }
     }
 }
 
