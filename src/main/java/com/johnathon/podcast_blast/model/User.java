@@ -14,12 +14,17 @@ import java.util.Set;
 
 public class User {
 
+    private static Long numberOfUsers;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotEmpty(message = "Name is required")
     private String name;
+
+    @NotEmpty(message="Username must be provided")
+    private String userName;
 
     @NotEmpty(message = "Email is required")
     private String email;
@@ -43,11 +48,20 @@ public class User {
     )
     private Collection<Episode> episodes = new ArrayList<>();
 
-    public User(Long id, String name, String email, String passwordDigest) {
-        this.id = id;
+    public User(String name, String username, String email, String passwordDigest) {
+        this.id = ++ numberOfUsers;
         this.name = name;
+        this.userName = userName;
         this.email = email;
         this.passwordDigest = passwordDigest;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public Long getId() {

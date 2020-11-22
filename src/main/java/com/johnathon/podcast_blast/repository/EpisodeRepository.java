@@ -6,7 +6,7 @@ import com.johnathon.podcast_blast.model.Episode;
 
 import java.util.Optional;
 
-public interface EpisodeRepository extends JpaRepository <Episode, Integer> {
+public interface EpisodeRepository extends JpaRepository <Episode, Long> {
     Optional<Episode> findById(Long id);
 }
 

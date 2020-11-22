@@ -5,17 +5,14 @@ import com.johnathon.podcast_blast.repository.EpisodeRepository;
 import com.johnathon.podcast_blast.repository.EpisodeRepository;
 import com.johnathon.podcast_blast.model.Episode;
 import com.johnathon.podcast_blast.repository.EpisodeRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.websocket.server.PathParam;
 import java.util.Collection;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1")
 public class EpisodeController {
     private EpisodeRepository episodeRepository;
 
@@ -31,8 +28,9 @@ public class EpisodeController {
     public Collection<Episode> getEpisodes(){
         return episodeRepository.findAll();
     }
-    @GetMapping("/episode/${id}")
-    public Optional<Episode> getEpisode(@PathParam("id") Long id){
-        return episodeRepository.findById(id);
+    @GetMapping("/episodes/{id}")
+    public Optional<Episode> getEpisode(@PathVariable String id){
+        Long longId = Long.parseLong(id);
+        return episodeRepository.findById(longId);
     }
 }
