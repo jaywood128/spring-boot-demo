@@ -24,7 +24,7 @@ public class User {
     private String name;
 
     @NotEmpty(message="Username must be provided")
-    private String userName;
+    private String username;
 
     @NotEmpty(message = "Email is required")
     private String email;
@@ -51,17 +51,17 @@ public class User {
     public User(String name, String username, String email, String passwordDigest) {
         this.id = ++ numberOfUsers;
         this.name = name;
-        this.userName = userName;
+        this.username = username;
         this.email = email;
         this.passwordDigest = passwordDigest;
     }
 
     public String getUserName() {
-        return userName;
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUserName(String username) {
+        this.username = username;
     }
 
     public Long getId() {
