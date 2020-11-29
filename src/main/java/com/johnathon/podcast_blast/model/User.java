@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+//@NoArgsConstructor
 @Entity
 @Table(name = "user")
 
@@ -54,6 +55,9 @@ public class User {
         this.username = username;
         this.email = email;
         this.passwordDigest = passwordDigest;
+    }
+    public User(){
+
     }
 
     public String getUserName() {

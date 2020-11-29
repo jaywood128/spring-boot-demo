@@ -31,6 +31,10 @@ public class Episode {
         this.podcast = podcast;
     }
 
+    public Episode(){
+
+    }
+
     public Long getId() {
         return id;
     }

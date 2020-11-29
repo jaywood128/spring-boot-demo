@@ -6,17 +6,25 @@
 <title> Insert title here</title>
 </head>
 <body>
-    <h1>Login</h1>
+    <h1>Signup</h1>
     ${SPRING_SECURITY_LAST_EXCEPTION.message}
-    <form action="login" method="POST">
+    <form action="/signup" method="POST">
 
         <table>
             <tr>
-                <td>User: </td>
-                <td><input type='text' name='username'></td>
+                <td>Full name: </td>
+                <td><input type='text' name='name'></td>
             </tr>
             <tr>
-                <td>Password: </td>
+                 <td>Username: </td>
+                 <td><input type='text' name='username'></td>
+            </tr>
+            <tr>
+                <td>email: </td>
+                <td><input type='text' name='email'></td>
+            </tr>
+            <tr>
+                <td>password: </td>
                 <td><input type='password' name='password' /></td>
             </tr>
             <tr>
@@ -24,6 +32,5 @@
             </tr>
         </table>
     </form>
-        <a href="/signup">signup</a>
 </body>
 </html>

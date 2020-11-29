@@ -24,6 +24,9 @@ public class Podcast {
         this.id = id;
         this.apiId = apiId;
     }
+    public Podcast(){
+
+    }
 
     public Long getId() {
         return id;

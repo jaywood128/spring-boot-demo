@@ -15,6 +15,8 @@ public class MyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
+        System.out.println("Getting access details from employee dao !!");
+
         User foundUser = userRepository.findByUsername(userName);
         if(foundUser == null){
             throw new UsernameNotFoundException("User 404");

@@ -6,15 +6,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class HomeController {
     @RequestMapping("/")
-    public String home(){
+    public String homePage(){
         return "home.jsp";
     }
     @RequestMapping("/login")
-    public String login(){
+    public String loginPage(){
         return "login.jsp";
     }
     @RequestMapping("/logout-succes")
-    public String logout(){
+    public String logoutPage(){
         return "logout.jsp";
     }
 }
