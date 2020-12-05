@@ -15,8 +15,6 @@ import java.util.Set;
 
 public class User {
 
-    private static Long numberOfUsers;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,8 +29,7 @@ public class User {
     private String email;
 
     @NotEmpty(message = "password is required")
-    private String passwordDigest;
-
+    private String password;
     @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(
             name = "user_podcast",
@@ -40,6 +37,7 @@ public class User {
             inverseJoinColumns = {@JoinColumn(name = "podcast_id")}
     )
     private Collection<Podcast> podcasts = new ArrayList<>();
+
 
     @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(
@@ -49,12 +47,10 @@ public class User {
     )
     private Collection<Episode> episodes = new ArrayList<>();
 
-    public User(String name, String username, String email, String passwordDigest) {
-        this.id = ++ numberOfUsers;
+    public User(String name, String username, String email) {
         this.name = name;
         this.username = username;
         this.email = email;
-        this.passwordDigest = passwordDigest;
     }
     public User(){
 
@@ -80,8 +76,8 @@ public class User {
         return email;
     }
 
-    public String getPasswordDigest() {
-        return passwordDigest;
+    public String getPassword() {
+        return password;
     }
 
     public Collection<Episode> getEpisodes() {
@@ -104,8 +100,8 @@ public class User {
         this.email = email;
     }
 
-    public void setPasswordDigest(String passwordDigest) {
-        this.passwordDigest = passwordDigest;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public void setEpisodes(Episode episode) {
