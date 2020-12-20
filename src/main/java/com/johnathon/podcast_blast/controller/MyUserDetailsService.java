@@ -38,4 +38,11 @@ public class MyUserDetailsService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(password));
         return userRepository.save(user);
     }
+//    public boolean loginUser(String username, String password){
+//        User loginUser = userRepository.findByUsername(username);
+//        if(loginUser != null && myUserDetails.getPassword().equals(password)){
+//
+//
+//        }
+//    }
 }

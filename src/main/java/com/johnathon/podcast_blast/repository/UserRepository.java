@@ -5,8 +5,11 @@ import org.springframework.stereotype.Repository;
 
 import com.johnathon.podcast_blast.model.User;
 
+import java.util.Optional;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     User findByName(String name);
-    User findByUsername(String email);
+    User findByUsername(String password);
+    Optional<User> findById(Long id);
 }

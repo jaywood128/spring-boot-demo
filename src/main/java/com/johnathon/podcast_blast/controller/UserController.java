@@ -23,12 +23,12 @@ public class UserController {
         this.userRepository = userRepository;
         this.myUserDetailsService = myUserDetailsService;
     }
-    @RequestMapping(value="/signup", method= RequestMethod.GET)
+    @GetMapping(value="/signup")
     public String signupUser(){
         return "signup.jsp";
     }
 
-    @RequestMapping(value="/signup", method= RequestMethod.POST)
+    @PostMapping(value="/signup")
     public String createNewUser(@RequestParam String name, @RequestParam String username, @RequestParam String email, @RequestParam String password ){
         User newUser = new User(name, username, email);
         newUser.setPassword(password);
@@ -37,7 +37,7 @@ public class UserController {
         if(newUser.getPassword() != null){
             myUserDetailsService.signUpUser(newUser);
         }
-        return "home.jsp";
+        return newUser.getName() + " was signed up with the email of " + newUser.getEmail();
     }
 
     @GetMapping(path= "/users", consumes = "application/json", produces = "application/json")
