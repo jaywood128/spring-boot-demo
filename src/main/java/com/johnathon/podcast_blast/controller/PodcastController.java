@@ -49,7 +49,7 @@ public class PodcastController {
     public ResponseEntity<List<JSONObject>> getPodcasts(@PathVariable("id") Integer userId) {
         Optional<User> foundUser = userRepository.findById(Long.valueOf(userId));
         List<JSONObject> returnedPodcasts = new ArrayList<>();
-        if (foundUser.isEmpty()) {
+        if (!foundUser.isPresent()) {
             List<JSONObject> noEntities = new ArrayList<>();
             return new ResponseEntity<>(noEntities, HttpStatus.NOT_FOUND);
         } else {

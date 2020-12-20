@@ -57,7 +57,7 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(
                             "/login",
                             "/signup",
-                            "/", "/api/**")
+                            "/", "/api/**", "/api/episodes/**")
                     .permitAll()
                     .anyRequest().authenticated()
                 .and()
