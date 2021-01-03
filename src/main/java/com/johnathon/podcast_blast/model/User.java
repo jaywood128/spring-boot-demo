@@ -88,32 +88,24 @@ public class User {
         return podcasts;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public void setEpisodes(Episode episode) {
+    public boolean addEpisode(Episode episode) {
         if ((episode != null) && (!this.episodes.contains(episode))) {
             this.episodes.add(episode);
+            return true;
         }
+        return false;
     }
 
-    public void setPodcasts(Podcast podcast) {
+    public boolean addPodcast(Podcast podcast) {
         if ((podcast != null) && (!this.podcasts.contains(podcast))) {
             this.podcasts.add(podcast);
+            return true;
         }
+        return false;
     }
 
 

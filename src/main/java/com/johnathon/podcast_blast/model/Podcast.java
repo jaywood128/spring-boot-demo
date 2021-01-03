@@ -20,13 +20,10 @@ public class Podcast {
     @OneToMany(mappedBy = "podcast")
     private Collection<Episode> episodes = new ArrayList<>();
 
-    public Podcast(Long id, String apiId) {
-        this.id = id;
+    public Podcast(String apiId) {
         this.apiId = apiId;
     }
-    public Podcast(){
-
-    }
+    public Podcast(){ }
 
     public Long getId() {
         return id;
