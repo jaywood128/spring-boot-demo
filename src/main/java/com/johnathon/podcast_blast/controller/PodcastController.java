@@ -20,6 +20,7 @@ import java.util.*;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.websocket.server.PathParam;
 
@@ -37,6 +38,9 @@ public class PodcastController {
     private RestTemplate restTemplate;
     private Collection<Podcast> emptyPodcastCollection = new ArrayList<>();
     private static final String baseURL = "https://listen-api.listennotes.com/api/v2";
+
+    @Autowired
+    private WebClient.Builder webClientBuilder;
 
     public PodcastController(PodcastRepository podcastRepository, UserRepository userRepository) {
         super();
@@ -65,40 +69,44 @@ public class PodcastController {
                 for (String aid : podcastIdArrayList) {
                     System.out.println("api id: " + aid);
 
-                    RestTemplate restTemplate = new RestTemplate();
-                    String basePodcastsUrl = baseURL + "/podcasts/" + aid + "?sort=recent_first";
-                    HttpHeaders httpHeaders = new HttpHeaders();
-                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-                    httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                    httpHeaders.set("X-ListenAPI-Key", appSecurityConfig.getApiKey());
-                    HttpEntity<Podcast> requestEntity = new HttpEntity<>(null, httpHeaders);
-                    ResponseEntity<JSONObject> response = restTemplate.exchange(basePodcastsUrl,
-                            HttpMethod.GET,
-                            requestEntity,
-                            JSONObject.class
-                    );
-                    if (response.getStatusCode() == HttpStatus.OK) {
-                        System.out.println("Request Successful");
-                        returnedPodcasts.add(response.getBody());
-                    } else {
-                        System.out.println("Request Failed");
-                        response.getStatusCode();
-                    }
+                    JSONObject jsonObject = webClientBuilder
+                            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                            .build()
+                            .get()
+                            .uri(baseURL + "/podcasts/" + aid + "?sort=recent_first")
+                            .retrieve()
+                            .bodyToMono(JSONObject.class)
+                            .block();
+                    returnedPodcasts.add(jsonObject);
                 }
             }
         }
         return new ResponseEntity<>(returnedPodcasts, HttpStatus.OK);
     }
 
-    // Create/ add podcast to podcasts
-    @PostMapping(value = "/{id}/podcasts/{id}", consumes = "application/json")
-    public Collection<Podcast> savePodcast(@RequestParam String userId, @RequestParam String apiId) {
-
-//        Podcast podcast = restTemplate
-//                .getForObject(baseURL + apiId + "?sort=recent_first" + appSecurityConfig.getApiKey(), Podcast.class);
-//        return podcastRepository.findAll();
+    // Add a podcast to user's podcasts
+    @PostMapping(value = "/{id}/podcasts/{apiId}", produces = "application/json", consumes = "application/json")
+    public HttpStatus addPodcast(@PathVariable String id, @PathVariable String apiId) {
+        Optional<User> user = userRepository.findById(Long.valueOf(id));
+        if (user.isPresent()) {
+            User foundUser = user.get();
+            for (Podcast podcast : foundUser.getPodcasts()) {
+                if (podcast.getApiId() == apiId) {
+                    return HttpStatus.UNPROCESSABLE_ENTITY;
+                }
+            }
+            Podcast newPodcast = new Podcast(apiId);
+            podcastRepository.save(newPodcast);
+            foundUser.addPodcast(newPodcast);
+            userRepository.save(foundUser);
+            System.out.println("Podcast with id " + newPodcast.getId() + "was added to " + user.get().getName() + " collection");
+            for(Podcast podcast : foundUser.getPodcasts()){
+                System.out.println("User's current podcasts: " + podcast.getApiId());
+            }
+            return HttpStatus.CREATED;
+        }
         return null;
-
     }
 
     // Delete podcasts from library

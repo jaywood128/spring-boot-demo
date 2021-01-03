@@ -33,8 +33,7 @@ public class Episode {
     @ManyToMany(mappedBy = "episodes")
     private List<User> user = new ArrayList<>();
 
-    public Episode(Long id, Podcast podcast, String apiId) {
-        this.id = id;
+    public Episode(Podcast podcast, String apiId) {
         this.podcast = podcast;
         this.apiId = apiId;
     }
