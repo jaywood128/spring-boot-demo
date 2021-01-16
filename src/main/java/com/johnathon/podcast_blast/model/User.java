@@ -4,10 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 //@NoArgsConstructor
 @Entity
@@ -30,13 +27,13 @@ public class User {
 
     @NotEmpty(message = "password is required")
     private String password;
-    @ManyToMany(cascade = { CascadeType.ALL })
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
     @JoinTable(
             name = "user_podcast",
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "podcast_id")}
     )
-    private Collection<Podcast> podcasts = new ArrayList<>();
+    private Set<Podcast> podcasts = new HashSet<>();
 
 
     @ManyToMany(cascade = { CascadeType.ALL })
@@ -45,7 +42,7 @@ public class User {
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "episode_id")}
     )
-    private Collection<Episode> episodes = new ArrayList<>();
+    private Set<Episode> episodes = new HashSet<>();
 
     public User(String name, String username, String email) {
         this.name = name;
@@ -80,11 +77,11 @@ public class User {
         return password;
     }
 
-    public Collection<Episode> getEpisodes() {
+    public Set<Episode> getEpisodes() {
         return episodes;
     }
 
-    public Collection<Podcast> getPodcasts() {
+    public Set<Podcast> getPodcasts() {
         return podcasts;
     }
 
@@ -92,22 +89,59 @@ public class User {
         this.password = password;
     }
 
+    public boolean addPodcast(Podcast podcast) {
+        if ((podcast.getId() != null)) {
+            this.podcasts.add(podcast);
+            podcast.setUser(this);
+            System.out.println("Podcast with id " + podcast.getId() + "was added to " + this.getName() + " collection");
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removePodcast(Podcast podcast) {
+        if ((podcast != null) && (this.podcasts.contains(podcast)) && podcast.getUsers().contains(this)) {
+            this.podcasts.remove(podcast);
+            podcast.removeUser(this);
+            System.out.print(podcast.getApiId() + " has been removed for " + this.username);
+            return true;
+        }
+        return false;
+    }
+
     public boolean addEpisode(Episode episode) {
         if ((episode != null) && (!this.episodes.contains(episode))) {
             this.episodes.add(episode);
+            episode.setUser(this);
             return true;
         }
         return false;
     }
 
-    public boolean addPodcast(Podcast podcast) {
-        if ((podcast != null) && (!this.podcasts.contains(podcast))) {
-            this.podcasts.add(podcast);
+    public boolean removeEpisode(Episode episode){
+        if ((episode != null) && (!this.episodes.contains(episode))) {
+            this.episodes.remove(episode);
+            episode.removeUser(this);
             return true;
         }
         return false;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id.equals(user.id) &&
+                name.equals(user.name) &&
+                username.equals(user.username) &&
+                email.equals(user.email) &&
+                password.equals(user.password);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, username, email, password);
+    }
 }
 

@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/episodes")
+@RequestMapping("/api")
 public class EpisodeController {
     private EpisodeRepository episodeRepository;
     private UserRepository userRepository;
@@ -31,8 +31,8 @@ public class EpisodeController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/episodes")
-    public Episode saveEpisode(Episode episode) {
+    @PostMapping("/{id}/episodes")
+    public Episode saveEpisode(@PathVariable("id") String id, Episode episode) {
         return episodeRepository.save(episode);
     }
 
@@ -41,7 +41,7 @@ public class EpisodeController {
         Optional<User> foundUser = userRepository.findById(Long.valueOf(id));
         System.out.println("User id is: " + id);
         List<JSONObject> returnedEpisodes = new ArrayList<>();
-        if (!foundUser.isPresent()) {
+        if (foundUser.isEmpty()) {
             List<JSONObject> noEntities = new ArrayList<>();
             return new ResponseEntity<>(noEntities, HttpStatus.NOT_FOUND);
         } else {

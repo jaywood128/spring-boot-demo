@@ -5,9 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "episode")
@@ -19,6 +17,7 @@ public class Episode {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String apiId;
 
     public String getApiId() {
@@ -31,7 +30,7 @@ public class Episode {
     private Podcast podcast;
 
     @ManyToMany(mappedBy = "episodes")
-    private List<User> user = new ArrayList<>();
+    private Set<User> users = new HashSet<>();
 
     public Episode(Podcast podcast, String apiId) {
         this.podcast = podcast;
@@ -62,14 +61,36 @@ public class Episode {
         }
     }
 
-    public Collection<User> getUser() {
-        return user;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Episode episode = (Episode) o;
+        return id.equals(episode.id) &&
+                apiId.equals(episode.apiId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, apiId);
+    }
+
+    public Set<User> getUser() {
+        return users;
     }
 
     public void setUser(User user) {
-        if(!this.user.contains((user)) && user != null){
-            this.user.add(user);
+        if(!this.users.contains((user)) && user != null){
+            this.users.add(user);
         }
+    }
+    public boolean removeUser(User user){
+        if ((user != null) && (!this.users.contains(user))) {
+            this.users.remove(user);
+            user.removeEpisode(this);
+            return true;
+        }
+        return false;
     }
 }
 
