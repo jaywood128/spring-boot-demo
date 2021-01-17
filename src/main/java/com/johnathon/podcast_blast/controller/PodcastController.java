@@ -113,18 +113,13 @@ public class PodcastController {
     public HttpStatus deletePodcast(@PathVariable("id") String id, @PathVariable("apiId") String apiId) {
         Optional<User> currentUser = userRepository.findById(Long.parseLong(id));
         Optional<Podcast> podcastToDelete = podcastRepository.findByApiId(apiId);
-        if(currentUser.isPresent()){
-            Set<Podcast> printPodcasts = currentUser.get().getPodcasts();
-            for (Podcast p : printPodcasts) {
-                System.out.println("Before DELETE ---->" + p.getApiId());
-            }
+        if(currentUser.isEmpty() || podcastToDelete.isEmpty()){
+            return HttpStatus.NOT_FOUND;
         }
-        if (podcastToDelete.isPresent() && currentUser.isPresent() && currentUser.get().getPodcasts().contains(podcastToDelete.get())) {
-            System.out.println("Inside first if");
+        if(currentUser.get().removePodcast(podcastToDelete.get()) && podcastToDelete.get().removeUser(currentUser.get()) ){
             currentUser.get().removePodcast(podcastToDelete.get());
             podcastToDelete.get().removeUser(currentUser.get());
-            userRepository.save(currentUser.get());
-            podcastRepository.save(podcastToDelete.get());
+            podcastRepository.delete(podcastToDelete.get());
             return HttpStatus.OK;
         }
         return HttpStatus.NOT_FOUND;

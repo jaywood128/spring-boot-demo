@@ -100,9 +100,8 @@ public class User {
     }
 
     public boolean removePodcast(Podcast podcast) {
-        if ((podcast != null) && (this.podcasts.contains(podcast)) && podcast.getUsers().contains(this)) {
+        if ((podcast != null) && (this.podcasts.contains(podcast))) {
             this.podcasts.remove(podcast);
-            podcast.removeUser(this);
             System.out.print(podcast.getApiId() + " has been removed for " + this.username);
             return true;
         }

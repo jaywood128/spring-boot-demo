@@ -51,7 +51,6 @@ public class Podcast {
 
     public boolean setUser(User user) {
         if(this.users.add(user)){
-            System.out.println("setting PODCAST with ID: " + this.getApiId() + "to USER: " + user.getUserName());
             Iterator it = this.users.iterator();
             System.out.println("PODCAST with ID: " + this.getApiId() + " USER's --->: ");
             if(it.hasNext()){
@@ -62,8 +61,7 @@ public class Podcast {
         return false;
     }
     public boolean removeUser(User user){
-        System.out.println("Inside podcast remove user: " + this.getUsers().contains(user));
-        if (user != null) {
+        if (user != null && this.getUsers().contains(user)) {
             System.out.print(this.apiId + " has been removed for " + user.getUserName());
             return this.users.remove(user);
         }
