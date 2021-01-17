@@ -110,7 +110,6 @@ public class User {
     public boolean addEpisode(Episode episode) {
         if ((episode != null) && (!this.episodes.contains(episode))) {
             this.episodes.add(episode);
-            episode.setUser(this);
             return true;
         }
         return false;

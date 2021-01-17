@@ -5,6 +5,7 @@ import com.johnathon.podcast_blast.model.Podcast;
 import com.johnathon.podcast_blast.model.User;
 import com.johnathon.podcast_blast.repository.EpisodeRepository;
 import com.johnathon.podcast_blast.repository.UserRepository;
+import com.sun.net.httpserver.Authenticator;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -31,9 +32,22 @@ public class EpisodeController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/{id}/episodes")
-    public Episode saveEpisode(@PathVariable("id") String id, Episode episode) {
-        return episodeRepository.save(episode);
+    @PostMapping("/{id}/episodes/{apiId}")
+    public ResponseEntity<?> saveEpisode(@PathVariable("id") String id, @PathVariable String apiId) {
+        Optional<User> user = userRepository.findById(Long.valueOf(id));
+        Episode newEpisode = new Episode(apiId);
+        Optional<Episode> episodeCheck = episodeRepository.findByApiId(apiId);
+        if (episodeCheck.isEmpty()) {
+            episodeRepository.save(newEpisode);
+        } else if (user.isPresent() && !user.get().getEpisodes().contains(newEpisode)) {
+            user.get().addEpisode(newEpisode);
+            newEpisode.setUser(user.get());
+            userRepository.save(user.get());
+            episodeRepository.save(newEpisode);
+            return new ResponseEntity<String>(HttpStatus.OK);
+        }
+
+        return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(value = "/{id}/episodes", produces = "application/json")
@@ -46,17 +60,14 @@ public class EpisodeController {
             return new ResponseEntity<>(noEntities, HttpStatus.NOT_FOUND);
         } else {
             User user = foundUser.get();
-            Collection<Episode> usersPodcasts = user.getEpisodes();
-            List<String> episodeIdArrayList = new ArrayList<>();
-            if (usersPodcasts != null) {
-                for (Episode episode : usersPodcasts) {
-                    String apiId = episode.getApiId();
-                    episodeIdArrayList.add(apiId);
-                    System.out.println("Episode id arraylist size is: " + episodeIdArrayList.size());
-                }
+            Set<Episode> usersEpisodes = user.getEpisodes();
+            Set<String> episodeIdArrayList = new HashSet<>();
+            for(Episode e : usersEpisodes){
+                episodeIdArrayList.add(e.getApiId());
+            }
+            if (usersEpisodes != null) {
                 for (String aid : episodeIdArrayList) {
                     System.out.println("api id: " + aid);
-
                     RestTemplate restTemplate = new RestTemplate();
                     String basePodcastsUrl = baseURL + "/episodes/" + aid;
                     HttpHeaders httpHeaders = new HttpHeaders();

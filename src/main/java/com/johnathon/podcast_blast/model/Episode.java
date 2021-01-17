@@ -32,8 +32,7 @@ public class Episode {
     @ManyToMany(mappedBy = "episodes")
     private Set<User> users = new HashSet<>();
 
-    public Episode(Podcast podcast, String apiId) {
-        this.podcast = podcast;
+    public Episode(String apiId) {
         this.apiId = apiId;
     }
 
@@ -79,10 +78,12 @@ public class Episode {
         return users;
     }
 
-    public void setUser(User user) {
+    public boolean setUser(User user) {
         if(!this.users.contains((user)) && user != null){
             this.users.add(user);
+            return true;
         }
+        return false;
     }
     public boolean removeUser(User user){
         if ((user != null) && (!this.users.contains(user))) {
