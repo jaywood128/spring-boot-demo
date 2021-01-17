@@ -4,27 +4,14 @@ import com.johnathon.podcast_blast.model.Podcast;
 import com.johnathon.podcast_blast.model.User;
 import com.johnathon.podcast_blast.repository.PodcastRepository;
 import com.johnathon.podcast_blast.repository.UserRepository;
-import jdk.swing.interop.SwingInterOpUtils;
 import net.minidev.json.JSONObject;
-import org.hibernate.LazyInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.awt.print.Book;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.SQLOutput;
 import java.util.*;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.websocket.server.PathParam;
@@ -96,16 +83,14 @@ public class PodcastController {
         Optional<User> user = userRepository.findById(Long.valueOf(id));
         Optional<Podcast> podcastCheck = podcastRepository.findByApiId(apiId);
         Podcast newPodcast = new Podcast(apiId);
-        if(user.isPresent() && podcastCheck.isEmpty() && !user.get().getPodcasts().contains(newPodcast)){
+        if (user.isPresent() && podcastCheck.isEmpty() && !user.get().getPodcasts().contains(newPodcast)) {
+            newPodcast.setUser(user.get());
             podcastRepository.save(newPodcast);
             user.get().addPodcast(newPodcast);
             userRepository.save(user.get());
-            for (Podcast podcast : user.get().getPodcasts()) {
-                System.out.println("User's current podcasts: " + podcast.getApiId());
-            }
             return HttpStatus.CREATED;
         }
-           return HttpStatus.NOT_FOUND;
+        return HttpStatus.NOT_FOUND;
     }
 
     // Delete podcast from library
@@ -113,10 +98,10 @@ public class PodcastController {
     public HttpStatus deletePodcast(@PathVariable("id") String id, @PathVariable("apiId") String apiId) {
         Optional<User> currentUser = userRepository.findById(Long.parseLong(id));
         Optional<Podcast> podcastToDelete = podcastRepository.findByApiId(apiId);
-        if(currentUser.isEmpty() || podcastToDelete.isEmpty()){
+        if (currentUser.isEmpty() || podcastToDelete.isEmpty()) {
             return HttpStatus.NOT_FOUND;
         }
-        if(currentUser.get().removePodcast(podcastToDelete.get()) && podcastToDelete.get().removeUser(currentUser.get()) ){
+        if (currentUser.get().removePodcast(podcastToDelete.get()) && podcastToDelete.get().removeUser(currentUser.get())) {
             currentUser.get().removePodcast(podcastToDelete.get());
             podcastToDelete.get().removeUser(currentUser.get());
             podcastRepository.delete(podcastToDelete.get());

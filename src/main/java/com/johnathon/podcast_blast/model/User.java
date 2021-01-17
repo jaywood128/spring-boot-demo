@@ -92,7 +92,6 @@ public class User {
     public boolean addPodcast(Podcast podcast) {
         if ((podcast.getId() != null)) {
             this.podcasts.add(podcast);
-            podcast.setUser(this);
             System.out.println("Podcast with id " + podcast.getId() + "was added to " + this.getName() + " collection");
             return true;
         }

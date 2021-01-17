@@ -50,12 +50,8 @@ public class Podcast {
     }
 
     public boolean setUser(User user) {
-        if(this.users.add(user)){
-            Iterator it = this.users.iterator();
-            System.out.println("PODCAST with ID: " + this.getApiId() + " USER's --->: ");
-            if(it.hasNext()){
-                System.out.println(it.next());
-            }
+        if(!this.users.contains(user)){
+            this.users.add(user);
             return true;
         }
         return false;
