@@ -32,8 +32,11 @@ public class Episode {
     @ManyToMany(mappedBy = "episodes")
     private Set<User> users = new HashSet<>();
 
-    public Episode(String apiId) {
+    public Episode(String apiId, Podcast podcast) {
         this.apiId = apiId;
+        if(podcast != null){
+            this.setPodcast(podcast);
+        }
     }
 
     public Episode(){

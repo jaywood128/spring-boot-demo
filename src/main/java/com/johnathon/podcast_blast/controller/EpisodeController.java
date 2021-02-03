@@ -4,6 +4,7 @@ import com.johnathon.podcast_blast.model.Episode;
 import com.johnathon.podcast_blast.model.Podcast;
 import com.johnathon.podcast_blast.model.User;
 import com.johnathon.podcast_blast.repository.EpisodeRepository;
+import com.johnathon.podcast_blast.repository.PodcastRepository;
 import com.johnathon.podcast_blast.repository.UserRepository;
 import com.sun.net.httpserver.Authenticator;
 import net.minidev.json.JSONObject;
@@ -19,6 +20,7 @@ import java.util.*;
 public class EpisodeController {
     private EpisodeRepository episodeRepository;
     private UserRepository userRepository;
+    private PodcastRepository podcastRepository;
     @Autowired
     private AppSecurityConfig appSecurityConfig;
     @Autowired
@@ -32,21 +34,30 @@ public class EpisodeController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/{id}/episodes/{apiId}")
-    public ResponseEntity<?> saveEpisode(@PathVariable("id") String id, @PathVariable String apiId) {
+    @PostMapping("/{id}/episodes/{episodeApiId}/{podcastApiId}")
+    public ResponseEntity<?> saveEpisode(@PathVariable("id") String id, @PathVariable String episodeApiId, @PathVariable String podcastApiId) {
         Optional<User> user = userRepository.findById(Long.valueOf(id));
-        Episode newEpisode = new Episode(apiId);
-        Optional<Episode> episodeCheck = episodeRepository.findByApiId(apiId);
-        if (episodeCheck.isEmpty()) {
-            episodeRepository.save(newEpisode);
-        } else if (user.isPresent() && !user.get().getEpisodes().contains(newEpisode)) {
+
+        Optional<Episode> episodeCheck = episodeRepository.findByApiId(episodeApiId);
+        Optional<Podcast> podcastCheck = podcastRepository.findByApiId(podcastApiId);
+        // Check to see if a user has the episode added. The episode also needs a podcast.
+        // If that podcastCheck is emtpy, it has to be created otherwise it exits and needs to be set on the
+        if(user.isPresent() && podcastCheck.isEmpty() && episodeCheck.isEmpty()){
+            Podcast newPodcast = new Podcast(podcastApiId);
+            podcastRepository.save(newPodcast);
+            Episode newEpisode = new Episode(episodeApiId, newPodcast);
             user.get().addEpisode(newEpisode);
             newEpisode.setUser(user.get());
             userRepository.save(user.get());
             episodeRepository.save(newEpisode);
             return new ResponseEntity<String>(HttpStatus.OK);
+        } else if (user.isPresent() && podcastCheck.isPresent() && episodeCheck.isPresent() && !user.get().getEpisodes().contains(episodeCheck.get())){
+            user.get().addEpisode(episodeCheck.get());
+            episodeCheck.get().setUser(user.get());
+            userRepository.save(user.get());
+            episodeRepository.save(episodeCheck.get());
+            return new ResponseEntity<String>(HttpStatus.OK);
         }
-
         return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
     }
 
