@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
 
@@ -23,7 +24,7 @@ public class EpisodeController {
     @Autowired
     private AppSecurityConfig appSecurityConfig;
     @Autowired
-    private RestTemplate restTemplate;
+    private WebClient.Builder webClientBuilder;
     private Collection<Podcast> emptyEpisodeCollection = new ArrayList<>();
     private static final String baseURL = "https://listen-api.listennotes.com/api/v2";
 
@@ -87,24 +88,17 @@ public class EpisodeController {
             if (usersEpisodes != null) {
                 for (String aid : episodeIdArrayList) {
                     System.out.println("api id: " + aid);
-                    RestTemplate restTemplate = new RestTemplate();
-                    String basePodcastsUrl = baseURL + "/episodes/" + aid;
-                    HttpHeaders httpHeaders = new HttpHeaders();
-                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-                    httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                    httpHeaders.set("X-ListenAPI-Key", appSecurityConfig.getApiKey());
-                    HttpEntity<Podcast> requestEntity = new HttpEntity<>(null, httpHeaders);
-                    ResponseEntity<JSONObject> response = restTemplate.exchange(basePodcastsUrl,
-                            HttpMethod.GET,
-                            requestEntity,
-                            JSONObject.class
-                    );
-                    if (response.getStatusCode() == HttpStatus.OK) {
-                        System.out.println("Request Successful");
-                        returnedEpisodes.add(response.getBody());
-                    } else {
-                        System.out.println("Request Failed");
-                        response.getStatusCode();
+                    JSONObject jsonObject = webClientBuilder
+                            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                            .build()
+                            .get()
+                            .uri(baseURL + "/episodes/" + aid + "?sort=recent_first")
+                            .retrieve()
+                            .bodyToMono(JSONObject.class)
+                            .block();
+                    if(jsonObject != null){
+                        returnedEpisodes.add(jsonObject);
                     }
                 }
             }
