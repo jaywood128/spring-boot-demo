@@ -40,5 +40,38 @@ public class SearchController {
         }
         return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
     }
+    @GetMapping("/get-genres")
+    private ResponseEntity<? extends Serializable> getGenres() {
+        JSONObject jsonObject = webClientBuilder
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                .build()
+                .get()
+                .uri(baseURL + "/genres?top_level_only=1")
+                .retrieve()
+                .bodyToMono(JSONObject.class)
+                .block();
+        if (jsonObject != null) {
+            return new ResponseEntity<>(jsonObject, HttpStatus.OK);
+        }
+        return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/best-podcasts-by-genre/{genre-id}")
+    private ResponseEntity<? extends Serializable> getBestPodcastsByGenre(@PathVariable("genre-id") String genreid)  {
+        JSONObject jsonObject = webClientBuilder
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                .build()
+                .get()
+                .uri(baseURL + "/best_podcasts?genre_id=" + genreid + "&page=<integer>&region=us&safe_mode=0")
+                .retrieve()
+                .bodyToMono(JSONObject.class)
+                .block();
+        if (jsonObject != null) {
+            return new ResponseEntity<>(jsonObject, HttpStatus.OK);
+        }
+        return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
+    }
 
 }
