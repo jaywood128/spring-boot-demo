@@ -70,6 +70,28 @@ public class EpisodeController {
         return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
     }
 
+    @GetMapping(value = "/{id}/episodes/{episodeApiId}", produces = "application/json")
+    public ResponseEntity<?> getEpisode(@PathVariable("id") String id, @PathVariable String episodeApiId) {
+        Optional<User> userCheck = userRepository.findById(Long.valueOf(id));
+        Optional<Episode> episodeCheck = episodeRepository.findByApiId(episodeApiId);
+        if (userCheck.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        JSONObject jsonObject = webClientBuilder
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                .build()
+                .get()
+                .uri(baseURL + "/episodes/" + episodeApiId + "?sort=recent_first")
+                .retrieve()
+                .bodyToMono(JSONObject.class)
+                .block();
+        if (jsonObject != null) {
+            return new ResponseEntity<>(jsonObject, HttpStatus.OK);
+        }
+        return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
+    }
+
     @GetMapping(value = "/{id}/episodes", produces = "application/json")
     public ResponseEntity<List<JSONObject>> getEpisodes(@PathVariable("id") Integer id) {
         Optional<User> foundUser = userRepository.findById(Long.valueOf(id));
@@ -106,26 +128,20 @@ public class EpisodeController {
         return new ResponseEntity<>(returnedEpisodes, HttpStatus.OK);
 
     }
-
-    @GetMapping(value = "/{id}/episodes/{episodeApiId}", produces = "application/json")
-    public ResponseEntity<?> getEpisode(@PathVariable("id") String id, @PathVariable String episodeApiId) {
-        Optional<User> userCheck = userRepository.findById(Long.valueOf(id));
-        Optional<Episode> episodeCheck = episodeRepository.findByApiId(episodeApiId);
-        if (userCheck.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    @DeleteMapping("/{id}/episodes/{episodeApiId}/{podcastApiId}")
+    public HttpStatus deleteEpisode(@PathVariable("id") String id, @PathVariable("episodeApiId") String episodeApiId, @PathVariable("podcastApiId") String podcastApiId){
+        Optional<User> foundUser = userRepository.findById(Long.valueOf(id));
+        Optional<Episode> checkEpisode = episodeRepository.findByApiId(episodeApiId);
+        Optional<Podcast> checkPodcast = podcastRepository.findByApiId(podcastApiId);
+        if (foundUser.isEmpty()) {
+            return HttpStatus.UNAUTHORIZED;
         }
-        JSONObject jsonObject = webClientBuilder
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
-                .build()
-                .get()
-                .uri(baseURL + "/episodes/" + episodeApiId + "?sort=recent_first")
-                .retrieve()
-                .bodyToMono(JSONObject.class)
-                .block();
-        if (jsonObject != null) {
-            return new ResponseEntity<>(jsonObject, HttpStatus.OK);
+        if(checkEpisode.isPresent() && foundUser.get().getEpisodes().contains(checkEpisode.get()) && checkPodcast.get().getEpisodes().contains(checkEpisode.get())){
+            foundUser.get().removeEpisode(checkEpisode.get());
+            checkPodcast.get().getEpisodes().remove(checkEpisode);
+            episodeRepository.delete(checkEpisode.get());
+            return HttpStatus.OK;
         }
-        return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
+        return HttpStatus.NOT_FOUND;
     }
 }

@@ -116,7 +116,7 @@ public class User {
     }
 
     public boolean removeEpisode(Episode episode){
-        if ((episode != null) && (!this.episodes.contains(episode))) {
+        if ((episode != null) && (this.episodes.contains(episode))) {
             this.episodes.remove(episode);
             episode.removeUser(this);
             return true;
