@@ -20,8 +20,8 @@ import java.util.*;
 public class EpisodeController {
     private EpisodeRepository episodeRepository;
     private UserRepository userRepository;
-    private PodcastRepository podcastRepository;
     @Autowired
+    private PodcastRepository podcastRepository;
     private AppSecurityConfig appSecurityConfig;
     @Autowired
     private WebClient.Builder webClientBuilder;
@@ -58,13 +58,14 @@ public class EpisodeController {
             userRepository.save(user.get());
             return new ResponseEntity<String>(HttpStatus.OK);
         }
-        if (episodeCheck.isPresent() || episodeCheck.isEmpty()) {
+        if (episodeCheck.isEmpty()) {
             //Adding an episode to an existing podcast.
-            user.get().addEpisode(episodeCheck.get());
-            episodeCheck.get().setUser(user.get());
-            podcastCheck.get().setEpisodes(episodeCheck.get());
+            Episode newEpisode = new Episode(episodeApiId, podcastCheck.get());
+            user.get().addEpisode(newEpisode);
+            newEpisode.setUser(user.get());
+            podcastCheck.get().setEpisodes(newEpisode);
             userRepository.save(user.get());
-            episodeRepository.save(episodeCheck.get());
+            episodeRepository.save(newEpisode);
             return new ResponseEntity<String>(HttpStatus.OK);
         }
         return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
@@ -107,21 +108,19 @@ public class EpisodeController {
             for (Episode e : usersEpisodes) {
                 episodeIdArrayList.add(e.getApiId());
             }
-            if (usersEpisodes != null) {
-                for (String aid : episodeIdArrayList) {
-                    System.out.println("api id: " + aid);
-                    JSONObject jsonObject = webClientBuilder
-                            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                            .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
-                            .build()
-                            .get()
-                            .uri(baseURL + "/episodes/" + aid + "?sort=recent_first")
-                            .retrieve()
-                            .bodyToMono(JSONObject.class)
-                            .block();
-                    if (jsonObject != null) {
-                        returnedEpisodes.add(jsonObject);
-                    }
+            for (String aid : episodeIdArrayList) {
+                System.out.println("api id: " + aid);
+                JSONObject jsonObject = webClientBuilder
+                        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                        .build()
+                        .get()
+                        .uri(baseURL + "/episodes/" + aid + "?sort=recent_first")
+                        .retrieve()
+                        .bodyToMono(JSONObject.class)
+                        .block();
+                if (jsonObject != null) {
+                    returnedEpisodes.add(jsonObject);
                 }
             }
         }
@@ -133,12 +132,12 @@ public class EpisodeController {
         Optional<User> foundUser = userRepository.findById(Long.valueOf(id));
         Optional<Episode> checkEpisode = episodeRepository.findByApiId(episodeApiId);
         Optional<Podcast> checkPodcast = podcastRepository.findByApiId(podcastApiId);
-        if (foundUser.isEmpty()) {
+        if (foundUser.isEmpty() || checkPodcast.isEmpty()) {
             return HttpStatus.UNAUTHORIZED;
         }
         if(checkEpisode.isPresent() && foundUser.get().getEpisodes().contains(checkEpisode.get()) && checkPodcast.get().getEpisodes().contains(checkEpisode.get())){
             foundUser.get().removeEpisode(checkEpisode.get());
-            checkPodcast.get().getEpisodes().remove(checkEpisode);
+            checkPodcast.get().getEpisodes().remove(checkEpisode.get());
             episodeRepository.delete(checkEpisode.get());
             return HttpStatus.OK;
         }

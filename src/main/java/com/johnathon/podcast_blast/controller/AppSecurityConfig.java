@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+
 @Configuration
 @PropertySource("classpath:application.properties")
 @EnableWebSecurity
@@ -57,9 +58,12 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(
                             "/login",
                             "/signup",
-                            "/", "/api/**", "/api/episodes/**")
+                            "/", "/api/**",
+                            "/api/episodes/**",
+                            "*"
+                            )
                     .permitAll()
-                    .anyRequest().authenticated()
+//                    .anyRequest().authenticated()
                 .and()
                     .formLogin()
                     .loginPage("/login").permitAll()
