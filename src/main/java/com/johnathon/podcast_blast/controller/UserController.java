@@ -27,12 +27,13 @@ public class UserController {
     public String signupUser(){
         return "signup.jsp";
     }
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping(value="/signup")
     public String createNewUser(@RequestParam String name, @RequestParam String username, @RequestParam String email, @RequestParam String password ){
         User newUser = new User(name, username, email);
         newUser.setPassword(password);
         System.out.println("password has been set");
+        System.out.println("Random change");
 
         if(newUser.getPassword() != null){
             myUserDetailsService.signUpUser(newUser);

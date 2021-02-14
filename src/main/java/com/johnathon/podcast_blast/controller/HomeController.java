@@ -29,14 +29,14 @@ public class HomeController {
         return "login.jsp";
     }
 
-//    @PostMapping("/login")
-//    public String loginForm(@RequestParam userName, @RequestParam password)  {
-//        UserDetails userDetails = myUserDetailsService.loadUserByUsername(username);
-//        if(userDetails.isEnabled() && userDetails.getPassword() == password){
-//            return "home.jsp";
-//        }
-//        return "login.jsp";
-//    }
+    @PostMapping("/login")
+    public String loginForm(@RequestParam String userName, @RequestParam String password)  {
+        UserDetails userDetails = myUserDetailsService.loadUserByUsername(userName);
+        if(userDetails.isEnabled() && userDetails.getPassword().equals(password)){
+            return "home.jsp";
+        }
+        return "login.jsp";
+    }
 
     @RequestMapping("/logout-succes")
     public String logoutPage() {
