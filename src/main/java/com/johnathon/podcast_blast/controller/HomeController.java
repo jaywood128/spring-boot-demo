@@ -24,10 +24,12 @@ public class HomeController {
         return "home.jsp";
     }
 
-    @GetMapping("/login")
-    public String loginPage() {
-        return "login.jsp";
-    }
+    // use react for GET /login
+
+//    @GetMapping("/login")
+//    public String loginPage() {
+//        return "login.jsp";
+//    }
 
     @PostMapping("/login")
     public String loginForm(@RequestParam String userName, @RequestParam String password)  {

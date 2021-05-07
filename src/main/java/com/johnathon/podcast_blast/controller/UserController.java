@@ -1,5 +1,6 @@
 package com.johnathon.podcast_blast.controller;
 
+import com.johnathon.podcast_blast.model.SignupForm;
 import com.johnathon.podcast_blast.model.User;
 import com.johnathon.podcast_blast.repository.UserRepository;
 import org.slf4j.Logger;
@@ -9,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 
-@Controller
+@RestController
+@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("api/auth")
 public class UserController {
 
     private final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -23,15 +26,17 @@ public class UserController {
         this.userRepository = userRepository;
         this.myUserDetailsService = myUserDetailsService;
     }
-    @GetMapping(value="/signup")
-    public String signupUser(){
-        return "signup.jsp";
-    }
-    @CrossOrigin(origins = "http://localhost:3000")
+//    @GetMapping(value="/signup")
+//    public String signupUser(){
+//        return "signup.jsp";
+//    }
+
+
     @PostMapping(value="/signup")
-    public String createNewUser(@RequestParam String name, @RequestParam String username, @RequestParam String email, @RequestParam String password ){
-        User newUser = new User(name, username, email);
-        newUser.setPassword(password);
+    public String createNewUser(@RequestBody SignupForm signupForm ){
+        System.out.println(signupForm);
+        User newUser = new User(signupForm.getName(), signupForm.getUsername(), signupForm.getEmail());
+        newUser.setPassword(signupForm.getPassword());
         System.out.println("password has been set");
         System.out.println("Random change");
 

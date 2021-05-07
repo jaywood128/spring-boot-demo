@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000/")
 @RequestMapping("/api")
 public class PodcastController {
 
