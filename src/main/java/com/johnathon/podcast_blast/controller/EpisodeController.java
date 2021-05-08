@@ -7,6 +7,7 @@ import com.johnathon.podcast_blast.model.User;
 import com.johnathon.podcast_blast.repository.EpisodeRepository;
 import com.johnathon.podcast_blast.repository.PodcastRepository;
 import com.johnathon.podcast_blast.repository.UserRepository;
+import com.johnathon.podcast_blast.security.WebSecurityConfig;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -22,7 +23,7 @@ public class EpisodeController {
     private UserRepository userRepository;
     @Autowired
     private PodcastRepository podcastRepository;
-    private AppSecurityConfig appSecurityConfig;
+    private WebSecurityConfig webSecurityConfig;
     @Autowired
     private WebClient.Builder webClientBuilder;
     private Collection<Podcast> emptyEpisodeCollection = new ArrayList<>();
@@ -80,7 +81,7 @@ public class EpisodeController {
         }
         JSONObject jsonObject = webClientBuilder
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                .defaultHeader("X-ListenAPI-Key", webSecurityConfig.getApiKey())
                 .build()
                 .get()
                 .uri(baseURL + "/episodes/" + episodeApiId + "?sort=recent_first")
@@ -112,7 +113,7 @@ public class EpisodeController {
                 System.out.println("api id: " + aid);
                 JSONObject jsonObject = webClientBuilder
                         .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                        .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                        .defaultHeader("X-ListenAPI-Key", webSecurityConfig.getApiKey())
                         .build()
                         .get()
                         .uri(baseURL + "/episodes/" + aid + "?sort=recent_first")

@@ -1,4 +1,4 @@
-package com.johnathon.podcast_blast.controller;
+package com.johnathon.podcast_blast.security.services;
 
 import com.johnathon.podcast_blast.model.User;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,14 +8,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-public class MyUserDetails implements UserDetails {
+public class UserDetailsImpl implements UserDetails {
     private User user;
 
-    public MyUserDetails(User user) {
+    public UserDetailsImpl(User user) {
         this.user = user;
     }
 
-    public MyUserDetails(){
+    public UserDetailsImpl(){
 
     }
 

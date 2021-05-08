@@ -1,4 +1,4 @@
-package com.johnathon.podcast_blast.controller;
+package com.johnathon.podcast_blast.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @PropertySource("classpath:application.properties")
 @EnableWebSecurity
-public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Value("${api.key}")
     private String apiKey;
@@ -60,7 +60,8 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                     .antMatchers(
                             "/login",
-                            "/signup",
+                            "/sign-up",
+                            "/sign-in",
                             "/", "/api/**",
                             "/api/episodes/**",
                             "*"
@@ -69,7 +70,7 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 //                    .anyRequest().authenticated()
                 .and()
                     .formLogin()
-                    .loginPage("/login").permitAll()
+                    .loginPage("/sign-in").permitAll()
                     .loginProcessingUrl("/perform_login")
                     .defaultSuccessUrl("/home.jsp", true)
                     .failureUrl("/login.jsp?error=true")

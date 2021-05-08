@@ -4,6 +4,7 @@ import com.johnathon.podcast_blast.model.Podcast;
 import com.johnathon.podcast_blast.model.User;
 import com.johnathon.podcast_blast.repository.PodcastRepository;
 import com.johnathon.podcast_blast.repository.UserRepository;
+import com.johnathon.podcast_blast.security.WebSecurityConfig;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -24,7 +25,7 @@ public class PodcastController {
     private UserRepository userRepository;
 
     @Autowired
-    private AppSecurityConfig appSecurityConfig;
+    private WebSecurityConfig webSecurityConfig;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -63,7 +64,7 @@ public class PodcastController {
 
                     JSONObject jsonObjects = webClientBuilder
                             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                            .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                            .defaultHeader("X-ListenAPI-Key", webSecurityConfig.getApiKey())
                             .build()
                             .get()
                             .uri(baseURL + "/podcasts/" + aid + "?sort=recent_first")
@@ -103,7 +104,7 @@ public class PodcastController {
 
                 JSONObject jsonObjects = webClientBuilder
                         .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                        .defaultHeader("X-ListenAPI-Key", appSecurityConfig.getApiKey())
+                        .defaultHeader("X-ListenAPI-Key", webSecurityConfig.getApiKey())
                         .build()
                         .get()
                         .uri(baseURL + "/podcasts/" + podcastApiId + "?sort=recent_first")

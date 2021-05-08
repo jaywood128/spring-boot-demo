@@ -1,4 +1,4 @@
-package com.johnathon.podcast_blast.model;
+package com.johnathon.podcast_blast.payload.request;
 
 public class SignupForm {
     private String name;

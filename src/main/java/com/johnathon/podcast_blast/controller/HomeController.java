@@ -1,28 +1,26 @@
 package com.johnathon.podcast_blast.controller;
 
+import com.johnathon.podcast_blast.SpringBootDemoApplication;
 import com.johnathon.podcast_blast.repository.UserRepository;
-import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.johnathon.podcast_blast.security.services.UserDetailsServiceImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import javax.security.auth.login.FailedLoginException;
 
 @Controller
 public class HomeController {
     private UserRepository userRepository;
 
-    private final MyUserDetailsService myUserDetailsService;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
-    public HomeController(UserRepository userRepository, MyUserDetailsService myUserDetailsService) {
+    public HomeController(UserRepository userRepository, UserDetailsServiceImpl userDetailsServiceImpl) {
         this.userRepository = userRepository;
-        this.myUserDetailsService = myUserDetailsService;
+        this.userDetailsServiceImpl = userDetailsServiceImpl;
     }
 
-    @RequestMapping("/")
-    public String homePage() {
-        return "home.jsp";
-    }
+//    @RequestMapping("/")
+//    public String homePage() {
+//        return "home.jsp";
+//    }
 
     // use react for GET /login
 
@@ -30,15 +28,6 @@ public class HomeController {
 //    public String loginPage() {
 //        return "login.jsp";
 //    }
-
-    @PostMapping("/login")
-    public String loginForm(@RequestParam String userName, @RequestParam String password)  {
-        UserDetails userDetails = myUserDetailsService.loadUserByUsername(userName);
-        if(userDetails.isEnabled() && userDetails.getPassword().equals(password)){
-            return "home.jsp";
-        }
-        return "login.jsp";
-    }
 
     @RequestMapping("/logout-succes")
     public String logoutPage() {
