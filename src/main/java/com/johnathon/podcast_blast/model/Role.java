@@ -22,6 +22,9 @@ public class Role {
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
     private Set<User> users = new HashSet<>();
 
+    public Role() {
+    }
+
     public Role(ERole name) {
         this.name = name;
     }
@@ -51,7 +54,7 @@ public class Role {
     }
 
     public boolean addUser(User user){
-        if (user instanceof User){
+        if (user == null){
             this.users.add(user);
             return true;
         }

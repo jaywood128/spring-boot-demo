@@ -1,66 +1,135 @@
 package com.johnathon.podcast_blast.controller;
 
+import com.johnathon.podcast_blast.model.ERole;
+import com.johnathon.podcast_blast.model.Role;
 import com.johnathon.podcast_blast.payload.request.LoginForm;
 import com.johnathon.podcast_blast.payload.request.SignupForm;
 import com.johnathon.podcast_blast.model.User;
+import com.johnathon.podcast_blast.payload.response.JwtResponse;
+import com.johnathon.podcast_blast.payload.response.MessageResponse;
+import com.johnathon.podcast_blast.repository.RoleRepository;
 import com.johnathon.podcast_blast.repository.UserRepository;
+import com.johnathon.podcast_blast.security.jwt.JwtUtils;
+import com.johnathon.podcast_blast.security.services.UserDetailsImpl;
 import com.johnathon.podcast_blast.security.services.UserDetailsServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import com.johnathon.podcast_blast.payload.response.MessageResponse;
+
+import javax.validation.Valid;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("api/auth")
 public class AuthController {
 
     private final Logger log = LoggerFactory.getLogger(AuthController.class);
-
+    @Autowired
     private UserRepository userRepository;
 
-    private UserDetailsServiceImpl userDetailsServiceImpl;
+    @Autowired
+    AuthenticationManager authenticationManager;
+
+    @Autowired
+    RoleRepository roleRepository;
+
+    @Autowired
+    PasswordEncoder encoder;
+
+    @Autowired
+    JwtUtils jwtUtils;
 
     public AuthController(){
 
     }
 
-    public AuthController(UserRepository userRepository, UserDetailsServiceImpl userDetailsServiceImpl){
-        super();
-        this.userRepository = userRepository;
-        this.userDetailsServiceImpl = userDetailsServiceImpl;
-    }
-
-//    @Bean
-//    public UserDetailsServiceImpl userDetailsServiceImpl(){
-//        UserDetailsServiceImpl userDetailsServiceImpl = new UserDetailsServiceImpl();
-//        return userDetailsServiceImpl;
-//    }
-
-    @PostMapping(value="/sign-up")
-    public String createNewUser(@RequestBody SignupForm signupForm ){
-        System.out.println(signupForm);
-        User newUser = new User(signupForm.getName(), signupForm.getUsername(), signupForm.getEmail());
-
-        if(newUser.getPassword() != null){
-            userDetailsServiceImpl.signUpUser(newUser);
+    @PostMapping("/signup")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupForm signupForm) {
+        if (userRepository.existsByUsername(signupForm.getUsername())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Username is already taken!"));
         }
-        return newUser.getName() + " was signed up with the email of " + newUser.getEmail();
-    }
 
-    @PostMapping("/sign-in")
-    public HttpStatus loginForm(@RequestBody LoginForm loginForm)  {
-        UserDetailsServiceImpl authenticateUser = new UserDetailsServiceImpl();
-        UserDetails userDetails = authenticateUser.loadUserByUsername(loginForm.getUserName());
+        if (userRepository.existsByEmail(signupForm.getEmail())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Email is already in use!"));
+        }
 
-        if (userDetails.getPassword().equals(loginForm.getPassword())) {
-            return HttpStatus.OK;
+        // Create new user's account
+        User user = new User(signupForm.getName(), signupForm.getUsername(),
+                signupForm.getEmail(),
+                encoder.encode(signupForm.getPassword()));
+
+        Set<String> strRoles = signupForm.getRole();
+        Set<Role> roles = new HashSet<>();
+
+        if (strRoles == null) {
+            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
         } else {
-            return HttpStatus.UNAUTHORIZED;
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "admin":
+                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
+
+                        break;
+                    case "mod":
+                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(modRole);
+
+                        break;
+                    default:
+                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(userRole);
+                }
+            });
         }
+
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    @PostMapping("/signin")
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginForm loginForm)  {
+        Authentication authentication = authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(loginForm.getUserName(), loginForm.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new JwtResponse(jwt,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                roles));
+
+
+
     }
 }

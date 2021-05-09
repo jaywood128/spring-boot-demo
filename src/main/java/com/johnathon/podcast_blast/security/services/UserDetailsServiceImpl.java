@@ -6,10 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
-
+@Component("userDetailsServiceImpl")
 public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
@@ -37,10 +38,4 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 //        }
 //        return new UserDetailsImpl(foundUser);
 //    }
-
-    public User signUpUser(User user) throws NullPointerException {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        System.out.println("password has been set");
-        return userRepository.save(user);
-    }
 }

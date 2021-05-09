@@ -1,7 +1,12 @@
 package com.johnathon.podcast_blast.payload.request;
 
+import javax.validation.constraints.NotBlank;
+
 public class LoginForm {
+    @NotBlank
     private String userName;
+
+    @NotBlank
     private String password;
 
     public String getUserName() {
