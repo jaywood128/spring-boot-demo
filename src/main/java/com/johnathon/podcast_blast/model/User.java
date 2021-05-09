@@ -27,6 +27,7 @@ public class User {
 
     @NotEmpty(message = "password is required")
     private String password;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
     @JoinTable(
             name = "user_podcast",
@@ -43,6 +44,14 @@ public class User {
             inverseJoinColumns = {@JoinColumn(name = "episode_id")}
     )
     private Set<Episode> episodes = new HashSet<>();
+
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+            name = "user_role",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "role_id")}
+    )
+    private Set<Role> roles = new HashSet<>();
 
     public User(String name, String username, String email) {
         this.name = name;
@@ -124,6 +133,10 @@ public class User {
         return false;
     }
 
+    public void setRoles(Set<Role> roles){
+        this.roles = (roles);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -139,6 +152,14 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, username, email, password);
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
     }
 }
 
