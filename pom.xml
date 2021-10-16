@@ -109,9 +109,14 @@
 			<artifactId>spring-security-jwt</artifactId>
 			<version>1.0.10.RELEASE</version>
 		</dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>2.2.3</version>
+        </dependency>
 
 
-	</dependencies>
+    </dependencies>
 
 	<properties>
 		<java.version>11</java.version>

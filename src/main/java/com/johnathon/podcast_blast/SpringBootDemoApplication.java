@@ -15,10 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
 @RestController
 public class SpringBootDemoApplication {
+	private static ApplicationContext applicationContext;
 	@Bean
 	public RestTemplate getRestTemplate() {
 		return new RestTemplate();
@@ -29,7 +31,14 @@ public class SpringBootDemoApplication {
 		return WebClient.builder();
 	}
 	public static void main(String[] args) {
-		SpringApplication.run(SpringBootDemoApplication.class, args);
+		applicationContext = SpringApplication.run(SpringBootDemoApplication.class, args);
+		displayAllBeans();
+	}
+	public static void displayAllBeans() {
+		String[] allBeanNames = applicationContext.getBeanDefinitionNames();
+		for(String beanName : allBeanNames) {
+			System.out.println(beanName);
+		}
 	}
 
 }

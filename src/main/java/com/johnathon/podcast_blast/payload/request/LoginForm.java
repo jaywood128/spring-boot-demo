@@ -4,17 +4,17 @@ import javax.validation.constraints.NotBlank;
 
 public class LoginForm {
     @NotBlank
-    private String userName;
+    private String username;
 
     @NotBlank
     private String password;
 
     public String getUserName() {
-        return userName;
+        return username;
     }
 
     public void setUserName(String userName) {
-        this.userName = userName;
+        this.username = userName;
     }
 
     public String getPassword() {
@@ -25,8 +25,8 @@ public class LoginForm {
         this.password = password;
     }
 
-    public LoginForm (String userName, String password){
-        this.userName = userName;
+    public LoginForm (String username, String password){
+        this.username = username;
         this.password = password;
     }
 }

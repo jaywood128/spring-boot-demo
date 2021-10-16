@@ -1,5 +1,4 @@
 package com.johnathon.podcast_blast.controller;
-
 import com.johnathon.podcast_blast.model.ERole;
 import com.johnathon.podcast_blast.model.Role;
 import com.johnathon.podcast_blast.payload.request.LoginForm;

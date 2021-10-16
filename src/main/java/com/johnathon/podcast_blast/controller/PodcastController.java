@@ -6,8 +6,10 @@ import com.johnathon.podcast_blast.repository.PodcastRepository;
 import com.johnathon.podcast_blast.repository.UserRepository;
 import com.johnathon.podcast_blast.security.WebSecurityConfig;
 import net.minidev.json.JSONObject;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +32,8 @@ public class PodcastController {
     @Autowired
     private RestTemplate restTemplate;
     private Collection<Podcast> emptyPodcastCollection = new ArrayList<>();
+    //prod --> https://listen-api.listennotes.com/api/v2
+    // test -> https://listen-api-test.listennotes.com/api/v2
     private static final String baseURL = "https://listen-api.listennotes.com/api/v2";
 
     @Autowired
@@ -86,8 +90,22 @@ public class PodcastController {
         }
         return new ResponseEntity<>(returnedPodcasts, HttpStatus.OK);
     }
+    //Check if a user is following a certain podcast
+    //params: user id, podcast api id
+    // return : boolean
+    @GetMapping(value = "/{id}/podcasts/{podcastApiId}/isFollowing", produces = "application/json")
+    boolean isUserFollowingPodcast(@PathVariable String id, @PathVariable("podcastApiId") String podcastApiId) {
+        Optional<User> userCheck = userRepository.findById(Long.valueOf(id));
+        Optional<Podcast> podcastCheck = podcastRepository.findByApiId(podcastApiId);
+        if(userCheck.isEmpty() || podcastCheck.isEmpty()) return false;
+        if(!userCheck.get().getPodcasts().contains(podcastCheck.get())){
+            return false;
+        }
+        return true;
+    }
 
     // Read a podcast's episodes
+//    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_MODERATOR') or hasRole('ROLE_ADMIN')")
     @GetMapping(value = "/{id}/podcasts/{podcastApiId}", produces = "application/json")
     ResponseEntity<List<JSONObject>> getPodcastsEpisodes(@PathVariable String id, @PathVariable("podcastApiId") String podcastApiId) {
         Optional<User> userCheck = userRepository.findById(Long.valueOf(id));
@@ -115,7 +133,7 @@ public class PodcastController {
                 Iterator<Map.Entry<String, Object>> it = jsonObjects.entrySet().iterator();
                 while(it.hasNext()) {
                     Map.Entry<String, Object> current = it.next();
-                    System.out.println("KEY: " + current.getKey() + "VALUE:  " + current.getValue());
+                    System.out.println("EPISODE KEY: " + current.getKey() + "EPISODE VALUE:  " + current.getValue());
                     if (!current.getKey().equalsIgnoreCase("episodes")) {
                         it.remove();
                     }
@@ -142,7 +160,6 @@ public class PodcastController {
         return HttpStatus.NOT_FOUND;
     }
 
-    // Delete podcast from library
     @DeleteMapping("/{id}/podcasts/{apiId}")
     public HttpStatus deletePodcast(@PathVariable("id") String id, @PathVariable("apiId") String apiId) {
         Optional<User> currentUser = userRepository.findById(Long.parseLong(id));
@@ -158,4 +175,53 @@ public class PodcastController {
         }
         return HttpStatus.NOT_FOUND;
     }
+
+    @GetMapping("/curated_podcasts")
+    public ResponseEntity<List<JSONObject>> curratedPodcasts(){
+        List<JSONObject> curratedPodcasts = new ArrayList<>();
+
+        JSONObject jsonObjects = webClientBuilder
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("X-ListenAPI-Key", webSecurityConfig.getApiKey())
+                .build()
+                .get()
+                .uri(baseURL + "/curated_podcasts?page=1")
+                .retrieve()
+                .bodyToMono(JSONObject.class)
+                .block();
+        assert jsonObjects != null;
+        curratedPodcasts.add(jsonObjects);
+
+        return new ResponseEntity<>(curratedPodcasts, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/podcasts/{podcastApiId}", produces = "application/json")
+    ResponseEntity<List<JSONObject>> getPodcastsEpisodesWithoutUserId(@PathVariable("podcastApiId") String podcastApiId) {
+
+        List<JSONObject> returnedPodcastEpisodes = new ArrayList<>();
+        List<JSONObject> podcastsEpisodes = new ArrayList<>();
+
+                JSONObject jsonObjects = webClientBuilder
+                        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .defaultHeader("X-ListenAPI-Key", webSecurityConfig.getApiKey())
+                        .build()
+                        .get()
+                        .uri(baseURL + "/podcasts/" + podcastApiId + "?sort=recent_first")
+                        .retrieve()
+                        .bodyToMono(JSONObject.class)
+                        .block();
+                assert jsonObjects != null;
+                Iterator<Map.Entry<String, Object>> it = jsonObjects.entrySet().iterator();
+                while(it.hasNext()) {
+                    Map.Entry<String, Object> current = it.next();
+                    System.out.println("EPISODE KEY: " + current.getKey() + "EPISODE VALUE:  " + current.getValue());
+                    if (!current.getKey().equalsIgnoreCase("episodes")) {
+                        it.remove();
+                    }
+                }
+                returnedPodcastEpisodes.add(jsonObjects);
+        return new ResponseEntity<>(returnedPodcastEpisodes, HttpStatus.OK);
+    }
+
+
 }
