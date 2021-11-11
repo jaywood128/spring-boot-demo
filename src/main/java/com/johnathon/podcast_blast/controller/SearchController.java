@@ -60,6 +60,24 @@ public class SearchController {
         }
         return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
     }
+    @PostMapping("/type-ahead-search")
+    private ResponseEntity<? extends Serializable> typeAheadSearch(@Valid @RequestBody SearchForm searchAheadForm){
+        System.out.println("Search ahead for " + searchAheadForm.getTextInput());
+        JSONObject jsonObject = webClientBuilder
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("X-ListenAPI-Key", webSecurityConfig.getApiKey())
+                .build()
+                .get()
+                .uri(baseURL + "/typeahead?q=" + searchAheadForm.getTextInput() + "&show_podcasts=1&show_genres=1&safe_mode=0")
+                .retrieve()
+                .bodyToMono(JSONObject.class)
+                .block();
+        if (jsonObject != null) {
+            return new ResponseEntity<>(jsonObject, HttpStatus.OK);
+        }
+        return new ResponseEntity<Error>(HttpStatus.NOT_FOUND);
+
+    }
 
     @GetMapping("/best-podcasts-by-genre/{genre-id}")
     private ResponseEntity<? extends Serializable> getBestPodcastsByGenre(@PathVariable("genre-id") String genreid)  {
